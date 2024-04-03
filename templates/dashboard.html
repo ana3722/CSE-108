@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome {{ user.username }}!</h2>
+        <a href="{{ url_for('logout') }}">Sign out</a>
+        <h3>Your Courses</h3>
+        <ul>
+            {% for course in enrolled_courses %}
+                <li>{{ course.name }} - {{ course.time }} ({{ course.students_enrolled }} students)</li>
+            {% else %}
+                <li>You are not enrolled in any courses.</li>
+            {% endfor %}
+        </ul>
+        <h3>All Courses</h3>
+        <ul>
+            {% for course in courses %}
+                <li>
+                    {{ course.name }} - {{ course.time }} ({{ course.students_enrolled }} students)
+                    {% if course not in enrolled_courses and course.students_enrolled < course.capacity %}
+                        <form method="POST" action="{{ url_for('enroll', course_id=course.id) }}">
+                            <button type="submit">Enroll</button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
