@@ -65,12 +65,12 @@ def logout():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
     if session.get('role') == 'teacher':
         return redirect(url_for('teacher_dashboard'))
     elif session.get('role') == 'admin':
         return redirect('/admin')
-    # Default to a general dashboard for students or other roles
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', user=user)
 
 # Define the route for the teacher dashboard
 @app.route('/teacher_dashboard')
