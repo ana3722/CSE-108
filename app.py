@@ -46,16 +46,35 @@ admin.add_view(EnrollmentAdminView(Enrollment, db.session))
 def home():
     return render_template('index.html')
 
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         password = request.form['password']
+#         user = User.query.filter_by(username=username).first()
+#         if user and user.password == password:  # For demonstration only; use hashed passwords in production
+#             session['user_id'] = user.id
+#             flash('Logged in successfully.', 'success')
+#             return redirect(url_for('dashboard'))
+#         else:
+#             flash('Invalid username or password.', 'danger')
+#     return render_template('login.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
-        if user and user.password == password:  # For demonstration only; use hashed passwords in production
+        if user and user.password == password:
             session['user_id'] = user.id
             flash('Logged in successfully.', 'success')
-            return redirect(url_for('dashboard'))
+            if user.role == 'admin':
+                return redirect(url_for('admin_panel'))
+            elif user.role == 'teacher':
+                return redirect(url_for('teacher_dashboard'))
+            else:
+                return redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password.', 'danger')
     return render_template('login.html')
