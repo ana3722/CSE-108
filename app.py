@@ -1,22 +1,46 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from models import db, User, Course, Enrollment
-import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
-
+from wtforms import StringField
+import os
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///school.db'
 app.config['SECRET_KEY'] = 'your_secret_key'
 
-db.init_app(app)
+db = SQLAlchemy(app)
 
+# Import your models (User, Course, Enrollment) here
+from models import User, Course, Enrollment
 
+# Initialize Flask-Admin to work with the app
 admin = Admin(app, name='Admin Panel', template_mode='bootstrap3')
-admin.add_view(ModelView(User, db.session))
-admin.add_view(ModelView(Course, db.session))
-admin.add_view(ModelView(Enrollment, db.session))
+
+# Create ModelViews for User, Course, and Enrollment
+class UserAdminView(ModelView):
+    column_list = ('username', 'role')  # Specify columns to display
+    column_searchable_list = ('username',)  # Enable searching by username
+
+
+class CourseAdminView(ModelView):
+    column_list = ('name', 'code', 'teacher_id')  # Specify columns to display
+    column_searchable_list = ('name', 'code')  # Enable searching by name and code
+    form_columns = ('name', 'code', 'teacher_id')  # Specify form fields for creating and editing
+
+    form_extra_fields = {
+        'teacher_id': StringField('Teacher')
+    }
+
+class EnrollmentAdminView(ModelView):
+    column_list = ('student_id', 'course_id', 'grade')  # Specify columns to display
+
+# Add ModelViews to Flask-Admin
+admin.add_view(UserAdminView(User, db.session))
+admin.add_view(CourseAdminView(Course, db.session))
+admin.add_view(EnrollmentAdminView(Enrollment, db.session))
+
+# Define routes and other application logic here...
 
 @app.route('/')
 def home():
