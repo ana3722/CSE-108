@@ -29,6 +29,7 @@ class CourseAdminView(ModelView):
         'teacher_id': StringField('Teacher')
     }
 
+# Add admin views to Flask-Admin
 admin.add_view(UserAdminView(User, db.session))
 admin.add_view(CourseAdminView(Course, db.session))
 
@@ -43,10 +44,10 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        # Query the user by username
         user = User.query.filter_by(username=username).first()
-        if user and user.password == password:  # In production, use hashed passwords
+        if user and user.password == password:  # Use hashed passwords in production
             session['user_id'] = user.id
+            session['role'] = user.role
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password', 'danger')
@@ -56,6 +57,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
+    session.pop('role', None)
     return redirect(url_for('home'))
 
 # Define the route for the user dashboard
@@ -63,17 +65,25 @@ def logout():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    # Implement dashboard logic, e.g., listing courses, enrolling in courses
-    return render_template('dashboard.html', user=user)
+    if session.get('role') == 'teacher':
+        return redirect(url_for('teacher_dashboard'))
+    elif session.get('role') == 'admin':
+        return redirect('/admin')
+    # Default to a general dashboard for students or other roles
+    return render_template('dashboard.html')
 
-# Define the route for enrolling in a course
-@app.route('/enroll/<int:course_id>', methods=['POST'])
-def enroll(course_id):
-    # Implement enrollment logic
-    return redirect(url_for('dashboard'))
+# Define the route for the teacher dashboard
+@app.route('/teacher_dashboard')
+def teacher_dashboard():
+    if 'user_id' not in session or session.get('role') != 'teacher':
+        return redirect(url_for('login'))
+    user_id = session['user_id']
+    courses = Course.query.filter_by(teacher_id=user_id).all()
+    for course in courses:
+        course.enrollments = Enrollment.query.filter_by(course_id=course.id).all()
+    return render_template('teacher_dashboard.html', courses=courses)
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # Creates the database tables if they don't exist
+        db.create_all()
     app.run(debug=True)
