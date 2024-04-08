@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Welcome to Your Dashboard!</h2>
+        <a href="/logout" class="btn btn-primary mb-3">Sign out</a>
+        <div>
+            {% for course in courses %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ course.name }} ({{ course.code }})</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Students Enrolled: {{ course.enrollments|length }}</h6>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Student</th>
+                                <th scope="col">Grade</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enrollment in course.enrollments %}
+                            <tr>
+                                <td>{{ enrollment.student.username }}</td>
+                                <td>{{ enrollment.grade or 'N/A' }}</td>
+                                <td>
+                                    <a href="/edit_grade/{{ course.id }}/{{ enrollment.student.id }}" class="btn btn-sm btn-info">Edit Grade</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <p>No courses found.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
